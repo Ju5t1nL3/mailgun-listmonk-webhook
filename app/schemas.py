@@ -1,4 +1,11 @@
+from enum import Enum
+
 from pydantic import BaseModel, Field
+
+
+class Severity(str, Enum):
+    PERMANENT = "permanent"
+    TEMPORARY = "temporary"
 
 
 class MailgunSignature(BaseModel):
@@ -14,7 +21,7 @@ class DeliveryStatus(BaseModel):
 class EventData(BaseModel):
     event: str
     recipient: str
-    severity: str | None = "hard"
+    severity: Severity | None = Severity.PERMANENT
     delivery_status: DeliveryStatus | None = Field(
         default=None, alias="delivery-status"
     )
