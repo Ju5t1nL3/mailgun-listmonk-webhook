@@ -42,6 +42,11 @@ def forward_bounce(event_data: EventData) -> dict[str, str]:
         "meta": json.dumps({"reason": error_msg}),
     }
 
+    # if you injected campaign id, then this will catch it
+    campaign_uuid = event_data.user_variables.campaign_uuid
+    if campaign_uuid:
+        listmonk_payload["campaign_uuid"] = campaign_uuid
+
     try:
         response = requests.post(
             f"{settings.LISTMONK_URL}/webhooks/bounce",

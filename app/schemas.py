@@ -1,4 +1,5 @@
 from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -23,6 +24,10 @@ class DeliveryStatus(BaseModel):
     description: str | None = None
 
 
+class UserVariables(BaseModel):
+    campaign_uuid: str | None = None
+
+
 class EventData(BaseModel):
     event: EventType
     recipient: str
@@ -32,6 +37,10 @@ class EventData(BaseModel):
     )
 
     tags: list[str] = Field(default_factory=list)
+    user_variables: UserVariables = Field(
+        default_factory=UserVariables, alias="user-variables"
+    )
+
 
 class MailgunSignature(BaseModel):
     timestamp: str
