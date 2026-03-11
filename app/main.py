@@ -1,6 +1,7 @@
-def main():
-    print("Hello from mailgun-listmonk-webhook!")
+from fastapi import FastAPI
 
+app = FastAPI()
 
-if __name__ == "__main__":
-    main()
+@app.post("/webhook")
+async def receive_webhook():
+    return {"message": "Hello World"}
