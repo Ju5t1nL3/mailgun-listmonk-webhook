@@ -20,7 +20,7 @@ def forward_bounce(event_data: EventData) -> dict[str, str]:
     if mailgun_severity == EventSeverity.TEMPORARY:
         listmonk_severity = "soft"
 
-    error_msg = event_data.delivery_status
+    error_msg = event_data.delivery_status.message
 
     listmonk_payload = {
         "email": event_data.recipient,
