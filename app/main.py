@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 
 from app.schemas import MailgunPayload
+from app.services import forward_bounce
 from app.utils.crypto import verify_mailgun_signature
 
 app = FastAPI()
@@ -16,4 +17,4 @@ async def receive_webhook(payload: MailgunPayload):
     ):
         raise HTTPException(status_code=401, detail="Invalid Mailgun Signature")
 
-    return {"message": "Hello World"}
+    return forward_bounce(payload.event_data)
