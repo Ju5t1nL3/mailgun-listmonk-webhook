@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Dict, Any
+from typing import Any
 
 class MailgunSignature(BaseModel):
     timestamp: str
@@ -8,4 +8,4 @@ class MailgunSignature(BaseModel):
 
 class MailgunPayload(BaseModel):
     signature: MailgunSignature
-    event_data: Dict[str, Any] = Field(alias="event-data")
+    event_data: dict[str, Any] = Field(alias="event-data")
