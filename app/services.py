@@ -2,7 +2,7 @@ import json
 
 import requests
 from fastapi import HTTPException
-from schemas import EventData, EventSeverity, EventType
+from app.schemas import EventData, EventSeverity, EventType
 
 from app.utils.config import settings
 
