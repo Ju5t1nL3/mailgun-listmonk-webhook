@@ -8,7 +8,7 @@ app = FastAPI()
 
 
 @app.post("/webhook")
-async def receive_webhook(payload: MailgunPayload):
+async def receive_webhook(payload: MailgunPayload) -> dict[str, str]:
     payload_signature = payload.signature
     if not verify_mailgun_signature(
         payload_signature.timestamp,
