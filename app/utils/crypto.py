@@ -1,6 +1,6 @@
-import os
-import hmac
 import hashlib
+import hmac
+import os
 
 mailgun_key = os.getenv("mailgun_signing_key")
 
