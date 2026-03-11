@@ -1,11 +1,25 @@
 from pydantic import BaseModel, Field
-from typing import Any
+
 
 class MailgunSignature(BaseModel):
     timestamp: str
     token: str
     signature: str
 
+
+class DeliveryStatus(BaseModel):
+    message: str | None = "No reason provided"
+
+
+class EventData(BaseModel):
+    event: str
+    recipient: str
+    severity: str | None = "hard"
+    delivery_status: DeliveryStatus | None = Field(
+        default=None, alias="delivery-status"
+    )
+
+
 class MailgunPayload(BaseModel):
     signature: MailgunSignature
-    event_data: dict[str, Any] = Field(alias="event-data")
+    event_data: EventData = Field(alias="event-data")
