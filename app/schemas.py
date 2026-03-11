@@ -18,12 +18,6 @@ class EventSeverity(StrEnum):
     TEMPORARY = "temporary"
 
 
-class MailgunSignature(BaseModel):
-    timestamp: str
-    token: str
-    signature: str
-
-
 class DeliveryStatus(BaseModel):
     message: str | None = "No reason provided"
 
@@ -35,6 +29,12 @@ class EventData(BaseModel):
     delivery_status: DeliveryStatus | None = Field(
         default=None, alias="delivery-status"
     )
+
+
+class MailgunSignature(BaseModel):
+    timestamp: str
+    token: str
+    signature: str
 
 
 class MailgunPayload(BaseModel):
