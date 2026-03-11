@@ -26,8 +26,8 @@ class EventData(BaseModel):
     event: EventType
     recipient: str
     severity: EventSeverity | None = EventSeverity.PERMANENT
-    delivery_status: DeliveryStatus | None = Field(
-        default=None, alias="delivery-status"
+    delivery_status: DeliveryStatus = Field(
+        default_factory=DeliveryStatus, alias="delivery-status"
     )
 
 
