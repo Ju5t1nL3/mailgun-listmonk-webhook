@@ -19,7 +19,8 @@ class EventSeverity(StrEnum):
 
 
 class DeliveryStatus(BaseModel):
-    message: str | None = "No reason provided"
+    message: str | None = None
+    description: str | None = None
 
 
 class EventData(BaseModel):

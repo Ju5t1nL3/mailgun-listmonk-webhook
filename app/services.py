@@ -2,8 +2,8 @@ import json
 
 import requests
 from fastapi import HTTPException
-from app.schemas import EventData, EventSeverity, EventType
 
+from app.schemas import EventData, EventSeverity, EventType
 from app.utils.config import settings
 
 
@@ -20,7 +20,11 @@ def forward_bounce(event_data: EventData) -> dict[str, str]:
     if mailgun_severity == EventSeverity.TEMPORARY:
         listmonk_severity = "soft"
 
-    error_msg = event_data.delivery_status.message
+    reasons = [
+        event_data.delivery_status.message,
+        event_data.delivery_status.description,
+    ]
+    error_msg = " | ".join(r for r in reasons if r) or "No reason provided"
 
     listmonk_payload = {
         "email": event_data.recipient,
