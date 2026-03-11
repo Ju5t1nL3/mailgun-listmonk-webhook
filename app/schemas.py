@@ -31,6 +31,7 @@ class EventData(BaseModel):
         default_factory=DeliveryStatus, alias="delivery-status"
     )
 
+    tags: list[str] = Field(default_factory=list)
 
 class MailgunSignature(BaseModel):
     timestamp: str

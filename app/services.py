@@ -14,6 +14,15 @@ def forward_bounce(event_data: EventData) -> dict[str, str]:
     if event_type not in [EventType.FAILED, EventType.COMPLAINED]:
         return {"status": "ignored", "reason": f"Event '{event_type}' ignored"}
 
+    # filter by tag to ensure it belongs to listmonk
+    # not needed if you use different subdomains for
+    # different apps
+
+    # uncomment this block if you only use one domain
+    # for all email sending
+    # if "listmonk" not in event_data.tags:
+    #     return {"status": "ignored", "reason": "Not a Listmonk email"}
+
     mailgun_severity = event_data.severity
 
     listmonk_severity = "hard"
