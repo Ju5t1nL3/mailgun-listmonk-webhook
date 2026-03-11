@@ -1,9 +1,9 @@
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class EVENT_TYPE(str, Enum):
+class EventType(StrEnum):
     ACCEPTED = "accepted"
     DELIVERED = "delivered"
     OPENED = "opened"
@@ -13,7 +13,7 @@ class EVENT_TYPE(str, Enum):
     COMPLAINED = "complained"
 
 
-class Severity(str, Enum):
+class EventSeverity(StrEnum):
     PERMANENT = "permanent"
     TEMPORARY = "temporary"
 
@@ -29,9 +29,9 @@ class DeliveryStatus(BaseModel):
 
 
 class EventData(BaseModel):
-    event: EVENT_TYPE
+    event: EventType
     recipient: str
-    severity: Severity | None = Severity.PERMANENT
+    severity: EventSeverity | None = EventSeverity.PERMANENT
     delivery_status: DeliveryStatus | None = Field(
         default=None, alias="delivery-status"
     )
