@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 
-from app.models import MailgunPayload
+from app.schemas import MailgunPayload
 from app.utils.crypto import verify_mailgun_signature
 
 app = FastAPI()
