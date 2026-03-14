@@ -1,13 +1,13 @@
 import json
 
-import requests
+import httpx
 from fastapi import HTTPException
 
 from app.schemas import EventData, EventSeverity, EventType
 from app.utils.config import settings
 
 
-def forward_bounce(event_data: EventData) -> dict[str, str]:
+async def forward_bounce(event_data: EventData) -> dict[str, str]:
     event_type = event_data.event
 
     # ignore if listmonk already tracks it
@@ -48,15 +48,19 @@ def forward_bounce(event_data: EventData) -> dict[str, str]:
         listmonk_payload["campaign_uuid"] = campaign_uuid
 
     try:
-        response = requests.post(
-            f"{settings.LISTMONK_URL}/webhooks/bounce",
-            json=listmonk_payload,
-            auth=(settings.LISTMONK_API_USER, settings.LISTMONK_API_TOKEN),
-            timeout=5,
-        )
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        print(f"Listmonk forwarding failed: {e}")
-        raise HTTPException(status_code=500, detail="Failed to forward to Listmonk")
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{settings.LISTMONK_URL}/webhooks/bounce",
+                json=listmonk_payload,
+                auth=(settings.LISTMONK_API_USER, settings.LISTMONK_API_TOKEN),
+                timeout=5.0,
+            )
+            response.raise_for_status()
+    except httpx.RequestError as e:
+        print(f"Listmonk networking failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to reach Listmonk")
+    except httpx.HTTPStatusError as e:
+        print(f"Listmonk rejected payload: {e}")
+        raise HTTPException(status_code=500, detail="Listmonk returned an error")
 
     return {"status": "success", "message": "Webhook forwarded"}

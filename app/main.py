@@ -17,4 +17,4 @@ async def receive_webhook(payload: MailgunPayload) -> dict[str, str]:
     ):
         raise HTTPException(status_code=401, detail="Invalid Mailgun Signature")
 
-    return forward_bounce(payload.event_data)
+    return await forward_bounce(payload.event_data)
