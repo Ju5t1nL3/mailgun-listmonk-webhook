@@ -8,6 +8,9 @@ class Settings(BaseSettings):
     LISTMONK_API_USER: str
     LISTMONK_API_TOKEN: str
 
+    REQUIRE_LISTMONK_TAG: bool = False
+    ENABLE_CAMPAIGN_TRACKING: bool = False
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
