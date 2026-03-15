@@ -17,3 +17,12 @@ def test_verify_mailgun_signature_valid():
     ).hexdigest()
 
     assert verify_mailgun_signature(timestamp, token, valid_signature) is True
+
+
+def test_verify_mailgun_signature_invalid():
+    timestamp = str(int(time.time()))
+    token = "test_token_123"
+
+    invalid_signature = "this_signature_is_invalid"
+
+    assert verify_mailgun_signature(timestamp, token, invalid_signature) is False
