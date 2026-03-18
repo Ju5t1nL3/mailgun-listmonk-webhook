@@ -19,8 +19,8 @@ def create_test_event(
     return EventData(
         event=event_type,
         recipient="test@tamuhack.org",
-        severity=EventSeverity.PERMANENT,
-        delivery_status=DeliveryStatus,
+        severity=severity,
+        delivery_status=delivery_status,
         tags=tags,
         user_variables=UserVariables(campaign_uuid=campaign_uuid),
     )
