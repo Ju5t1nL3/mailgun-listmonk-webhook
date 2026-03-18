@@ -32,12 +32,12 @@ class EventData(BaseModel):
     recipient: str
     severity: EventSeverity | None = EventSeverity.PERMANENT
     delivery_status: DeliveryStatus = Field(
-        default_factory=DeliveryStatus, alias="delivery-status"
+        default_factory=DeliveryStatus, validation_alias="delivery-status"
     )
 
     tags: list[str] = Field(default_factory=list)
     user_variables: UserVariables = Field(
-        default_factory=UserVariables, alias="user-variables"
+        default_factory=UserVariables, validation_alias="user-variables"
     )
 
 
@@ -49,4 +49,4 @@ class MailgunSignature(BaseModel):
 
 class MailgunPayload(BaseModel):
     signature: MailgunSignature
-    event_data: EventData = Field(alias="event-data")
+    event_data: EventData = Field(validation_alias="event-data")
