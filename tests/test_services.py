@@ -1,3 +1,5 @@
+import pytest
+
 from app.schemas import (
     DeliveryStatus,
     EventData,
@@ -5,6 +7,7 @@ from app.schemas import (
     EventType,
     UserVariables,
 )
+from app.services import forward_bounce
 
 
 def create_test_event(
@@ -24,3 +27,10 @@ def create_test_event(
         tags=tags,
         user_variables=UserVariables(campaign_uuid=campaign_uuid),
     )
+
+
+@pytest.mark.asyncio
+async def test_ignore_irrelevant_events():
+    event = create_test_event(event_type=EventType.ACCEPTED)
+    result = await forward_bounce(event)
+    assert result["status"] == "ignored"
