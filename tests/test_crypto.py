@@ -6,7 +6,7 @@ from app.utils.config import settings
 from app.utils.crypto import verify_mailgun_signature
 
 
-def test_verify_mailgun_signature_valid():
+def test_verify_mailgun_signature_valid() -> None:
     timestamp = str(int(time.time()))
     token = "test_token_123"
 
@@ -19,7 +19,7 @@ def test_verify_mailgun_signature_valid():
     assert verify_mailgun_signature(timestamp, token, valid_signature) is True
 
 
-def test_verify_mailgun_signature_invalid():
+def test_verify_mailgun_signature_invalid() -> None:
     timestamp = str(int(time.time()))
     token = "test_token_123"
 
