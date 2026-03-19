@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -38,24 +38,24 @@ def mock_event():
 @pytest.fixture
 def mock_http_client():
     mock_client = AsyncMock()
-    with patch("app.services.httpx.AsyncClient") as mock_class:
-        mock_class.return_value.__aenter__.return_value = mock_client
-        yield mock_client
+    mock_client.post.return_value = MagicMock()
+
+    return mock_client
 
 
 @pytest.mark.asyncio
-async def test_ignore_irrelevant_events(mock_event):
+async def test_ignore_irrelevant_events(mock_event, mock_http_client):
     event_type = EventType.ACCEPTED
     event = mock_event(event_type=event_type)
-    result = await forward_bounce(event)
+    result = await forward_bounce(event, mock_http_client)
     assert result["status"] == "ignored"
     assert result["reason"] == f"Event '{event_type}' ignored"
 
 
 @pytest.mark.asyncio
 @patch("app.services.settings.REQUIRE_LISTMONK_TAG", True)
-async def test_ignore_missing_tag_when_flag_enabled(mock_event):
+async def test_ignore_missing_tag_when_flag_enabled(mock_event, mock_http_client):
     event = mock_event(tags=[])
-    result = await forward_bounce(event)
+    result = await forward_bounce(event, mock_http_client)
     assert result["status"] == "ignored"
     assert result["reason"] == "Not a Listmonk email"

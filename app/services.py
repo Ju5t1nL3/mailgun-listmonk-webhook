@@ -7,7 +7,9 @@ from app.schemas import EventData, EventSeverity, EventType
 from app.utils.config import settings
 
 
-async def forward_bounce(event_data: EventData) -> dict[str, str]:
+async def forward_bounce(
+    event_data: EventData, client: httpx.AsyncClient
+) -> dict[str, str]:
     event_type = event_data.event
 
     # ignore if listmonk already tracks it
@@ -44,14 +46,13 @@ async def forward_bounce(event_data: EventData) -> dict[str, str]:
         listmonk_payload["campaign_uuid"] = event_data.user_variables.campaign_uuid
 
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{settings.LISTMONK_URL}/webhooks/bounce",
-                json=listmonk_payload,
-                auth=(settings.LISTMONK_API_USER, settings.LISTMONK_API_TOKEN),
-                timeout=5.0,
-            )
-            response.raise_for_status()
+        response = await client.post(
+            f"{settings.LISTMONK_URL}/webhooks/bounce",
+            json=listmonk_payload,
+            auth=(settings.LISTMONK_API_USER, settings.LISTMONK_API_TOKEN),
+            timeout=5.0,
+        )
+        response.raise_for_status()
     except httpx.RequestError as e:
         print(f"Listmonk networking failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to reach Listmonk")
