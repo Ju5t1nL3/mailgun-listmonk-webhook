@@ -45,6 +45,9 @@ def mock_http_client():
     return mock_client
 
 
+# ---------------------------------------- #
+#  Tests: ignore irrelevant events         #
+# ---------------------------------------- #
 @pytest.mark.asyncio
 async def test_ignore_irrelevant_events(mock_event, mock_http_client):
     event_type = EventType.ACCEPTED
@@ -54,6 +57,9 @@ async def test_ignore_irrelevant_events(mock_event, mock_http_client):
     assert result.error_code == WebhookErrorCode.EVENTTYPEIGNORED
 
 
+# ---------------------------------------- #
+#  Tests: "REQUIRE_LISTMONK_TAG" flag      #
+# ---------------------------------------- #
 @pytest.mark.asyncio
 @patch("app.services.settings.REQUIRE_LISTMONK_TAG", True)
 async def test_ignore_missing_tag_when_flag_enabled(mock_event, mock_http_client):
