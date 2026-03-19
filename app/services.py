@@ -3,24 +3,39 @@ import json
 import httpx
 from fastapi import HTTPException
 
-from app.schemas import EventData, EventSeverity, EventType
+from app.schemas import (
+    EventData,
+    EventSeverity,
+    EventType,
+    WebhookErrorCode,
+    WebhookResponse,
+    WebhookStatus,
+)
 from app.utils.config import settings
 
 
 async def forward_bounce(
     event_data: EventData, client: httpx.AsyncClient
-) -> dict[str, str]:
+) -> WebhookResponse:
     event_type = event_data.event
 
     # ignore if listmonk already tracks it
     if event_type not in [EventType.FAILED, EventType.COMPLAINED]:
-        return {"status": "ignored", "reason": f"Event '{event_type}' ignored"}
+        return WebhookResponse(
+            webhook_status=WebhookStatus.IGNORED,
+            error_code=WebhookErrorCode.EVENTTYPEIGNORED,
+            message=f"Event '{event_type}' ignored",
+        )
 
     # filter by tag to ensure it belongs to listmonk
     # not needed if you use different subdomains for
     # different apps
     if settings.REQUIRE_LISTMONK_TAG and "listmonk" not in event_data.tags:
-        return {"status": "ignored", "reason": "Not a Listmonk email"}
+        return WebhookResponse(
+            webhook_status=WebhookStatus.IGNORED,
+            error_code=WebhookErrorCode.NOTFROMLISTMONK,
+            message="Not a Listmonk email",
+        )
 
     mailgun_severity = event_data.severity
 
@@ -60,4 +75,6 @@ async def forward_bounce(
         print(f"Listmonk rejected payload: {e}")
         raise HTTPException(status_code=500, detail="Listmonk returned an error")
 
-    return {"status": "success", "message": "Webhook forwarded"}
+    return WebhookResponse(
+        webhook_status=WebhookStatus.SUCCESS, message="Webhook forwarded"
+    )

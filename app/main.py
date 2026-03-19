@@ -3,7 +3,7 @@ from typing import Annotated
 import httpx
 from fastapi import Depends, FastAPI, HTTPException
 
-from app.schemas import MailgunPayload
+from app.schemas import MailgunPayload, WebhookResponse
 from app.services import forward_bounce
 from app.utils.crypto import verify_mailgun_signature
 
@@ -15,11 +15,11 @@ async def get_http_client():
         yield client
 
 
-@app.post("/webhook")
+@app.post("/webhook", response_model=WebhookResponse)
 async def receive_webhook(
     payload: MailgunPayload,
     client: Annotated[httpx.AsyncClient, Depends(get_http_client)],
-) -> dict[str, str]:
+):
     payload_signature = payload.signature
     if not verify_mailgun_signature(
         payload_signature.timestamp,
