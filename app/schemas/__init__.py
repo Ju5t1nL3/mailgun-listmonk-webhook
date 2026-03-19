@@ -6,3 +6,4 @@ from app.schemas.event import (
     UserVariables,
 )
 from app.schemas.mailgun import MailgunPayload, MailgunSignature
+from app.schemas.webhook import WebhookErrorCode, WebhookResponse, WebhookStatus
