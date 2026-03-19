@@ -7,6 +7,9 @@ from app.schemas import (
     EventData,
     EventSeverity,
     EventType,
+    ListmonkMeta,
+    ListmonkPayload,
+    ListmonkSeverity,
     WebhookErrorCode,
     WebhookResponse,
     WebhookStatus,
@@ -39,9 +42,9 @@ async def forward_bounce(
 
     mailgun_severity = event_data.severity
 
-    listmonk_severity = "hard"
+    listmonk_severity = ListmonkSeverity.HARD
     if mailgun_severity == EventSeverity.TEMPORARY:
-        listmonk_severity = "soft"
+        listmonk_severity = ListmonkSeverity.SOFT
 
     reasons = [
         event_data.delivery_status.message,
@@ -49,21 +52,20 @@ async def forward_bounce(
     ]
     error_msg = " | ".join(r for r in reasons if r) or "No reason provided"
 
-    listmonk_payload = {
-        "email": event_data.recipient,
-        "source": "mailgun_webhook",
-        "type": listmonk_severity,
-        "meta": json.dumps({"reason": error_msg}),
-    }
+    listmonk_error_msg = ListmonkMeta(reason=error_msg)
+
+    listmonk_payload = ListmonkPayload(
+        email=event_data.recipient, type=listmonk_severity, meta=listmonk_error_msg
+    )
 
     # if you injected campaign id, then this will catch it
     if settings.ENABLE_CAMPAIGN_TRACKING and event_data.user_variables.campaign_uuid:
-        listmonk_payload["campaign_uuid"] = event_data.user_variables.campaign_uuid
+        listmonk_payload.campaign_uuid = event_data.user_variables.campaign_uuid
 
     try:
         response = await client.post(
             f"{settings.LISTMONK_URL}/webhooks/bounce",
-            json=listmonk_payload,
+            json=listmonk_payload.model_dump,
             auth=(settings.LISTMONK_API_USER, settings.LISTMONK_API_TOKEN),
             timeout=5.0,
         )
