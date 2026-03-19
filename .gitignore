@@ -6,3 +6,6 @@ venv/
 
 # Python Cache
 __pycache__/
+
+# Pytest Coverage
+.coverage
