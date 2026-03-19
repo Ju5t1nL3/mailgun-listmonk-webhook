@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import AsyncMock, patch
 
 from app.schemas import (
     DeliveryStatus,
@@ -30,6 +31,12 @@ def mock_event():
             user_variables=UserVariables(campaign_uuid=campaign_uuid),
         )
 
+@pytest.fixture
+def mock_http_client():
+    mock_client = AsyncMock()
+    with patch("app.services.httpx.AsyncClient") as mock_class:
+        mock_class.return_value.__aenter__.return_value = mock_client
+        yield mock_client
 
 @pytest.mark.asyncio
 async def test_ignore_irrelevant_events(mock_event):
