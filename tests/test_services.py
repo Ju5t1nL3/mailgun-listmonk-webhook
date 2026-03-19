@@ -11,6 +11,7 @@ from app.schemas import (
     WebhookErrorCode,
     WebhookStatus,
 )
+from app.schemas.listmonk import ListmonkSeverity
 from app.services import forward_bounce
 
 
@@ -22,7 +23,7 @@ def mock_event():
         delivery_status: DeliveryStatus = DeliveryStatus(
             message="Failed", description=None
         ),
-        tags: list[str] = [],
+        tags: list[str] = ["listmonk"],
         campaign_uuid: str = "123-abc",
     ) -> EventData:
         return EventData(
@@ -76,9 +77,30 @@ async def test_accept_listmonk_tag_when_flag_enabeld(mock_event, mock_http_clien
     result = await forward_bounce(event, mock_http_client)
     assert result.webhook_status == WebhookStatus.SUCCESS
 
+
 @pytest.mark.asyncio
 @patch("app.services.settings.REQUIRE_LISTMONK_TAG", False)
 async def test_accept_listmonk_tag_when_flag_disabled(mock_event, mock_http_client):
     event = mock_event(tags=[])
     result = await forward_bounce(event, mock_http_client)
     assert result.webhook_status == WebhookStatus.SUCCESS
+
+
+# ---------------------------------------- #
+#  Tests: correctly map mailgun severity   #
+#  listmonk severity                       #
+# ---------------------------------------- #
+@pytest.mark.asyncio
+async def test_maps_temporary_severity_to_soft_bounce(mock_event, mock_http_client):
+    event = mock_event(severity=EventSeverity.TEMPORARY)
+    await forward_bounce(event, mock_http_client)
+    payload = mock_http_client.post.call_args.kwargs["json"]
+    assert payload["type"] == ListmonkSeverity.SOFT
+
+
+@pytest.mark.asyncio
+async def test_maps_default_severity_to_hard_bounce(mock_event, mock_http_client):
+    event = mock_event(severity=EventSeverity.PERMANENT)
+    await forward_bounce(event, mock_http_client)
+    payload = mock_http_client.post.call_args.kwargs["json"]
+    assert payload["type"] == ListmonkSeverity.HARD
