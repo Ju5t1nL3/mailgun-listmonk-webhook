@@ -44,6 +44,8 @@ def mock_http_client():
 
 @pytest.mark.asyncio
 async def test_ignore_irrelevant_events(mock_event):
-    event = mock_event(event_type=EventType.ACCEPTED)
+    event_type = EventType.ACCEPTED
+    event = mock_event(event_type=event_type)
     result = await forward_bounce(event)
     assert result["status"] == "ignored"
+    assert result["reason"] == f"Event '{event_type}' ignored"
