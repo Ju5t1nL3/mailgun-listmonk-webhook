@@ -8,6 +8,8 @@ from app.schemas import (
     EventSeverity,
     EventType,
     UserVariables,
+    WebhookErrorCode,
+    WebhookStatus,
 )
 from app.services import forward_bounce
 
@@ -48,8 +50,8 @@ async def test_ignore_irrelevant_events(mock_event, mock_http_client):
     event_type = EventType.ACCEPTED
     event = mock_event(event_type=event_type)
     result = await forward_bounce(event, mock_http_client)
-    assert result["status"] == "ignored"
-    assert result["reason"] == f"Event '{event_type}' ignored"
+    assert result.webhook_status == WebhookStatus.IGNORED
+    assert result.error_code == WebhookErrorCode.EVENTTYPEIGNORED
 
 
 @pytest.mark.asyncio
@@ -57,5 +59,13 @@ async def test_ignore_irrelevant_events(mock_event, mock_http_client):
 async def test_ignore_missing_tag_when_flag_enabled(mock_event, mock_http_client):
     event = mock_event(tags=[])
     result = await forward_bounce(event, mock_http_client)
-    assert result["status"] == "ignored"
-    assert result["reason"] == "Not a Listmonk email"
+    assert result.webhook_status == WebhookStatus.IGNORED
+    assert result.error_code == WebhookErrorCode.NOTFROMLISTMONK
+
+
+@pytest.mark.asyncio
+@patch("app.services.settings.REQUIRE_LISTMONK_TAG", True)
+async def test_accept_listmonk_tag_when_flag_enabeld(mock_event, mock_http_client):
+    event = mock_event(tags=["listmonk"])
+    result = await forward_bounce(event, mock_http_client)
+    assert result.webhook_status == WebhookStatus.SUCCESS
