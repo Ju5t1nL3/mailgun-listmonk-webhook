@@ -69,3 +69,10 @@ async def test_accept_listmonk_tag_when_flag_enabeld(mock_event, mock_http_clien
     event = mock_event(tags=["listmonk"])
     result = await forward_bounce(event, mock_http_client)
     assert result.webhook_status == WebhookStatus.SUCCESS
+
+@pytest.mark.asyncio
+@patch("app.services.settings.REQUIRE_LISTMONK_TAG", False)
+async def test_accept_listmonk_tag_when_flag_disabled(mock_event, mock_http_client):
+    event = mock_event(tags=[])
+    result = await forward_bounce(event, mock_http_client)
+    assert result.webhook_status == WebhookStatus.SUCCESS
