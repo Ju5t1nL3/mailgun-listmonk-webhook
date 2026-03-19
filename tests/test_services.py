@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
 
 from app.schemas import (
     DeliveryStatus,
@@ -49,3 +50,12 @@ async def test_ignore_irrelevant_events(mock_event):
     result = await forward_bounce(event)
     assert result["status"] == "ignored"
     assert result["reason"] == f"Event '{event_type}' ignored"
+
+
+@pytest.mark.asyncio
+@patch("app.services.settings.REQUIRE_LISTMONK_TAG", True)
+async def test_ignore_missing_tag_when_flag_enabled(mock_event):
+    event = mock_event(tags=[])
+    result = await forward_bounce(event)
+    assert result["status"] == "ignored"
+    assert result["reason"] == "Not a Listmonk email"
