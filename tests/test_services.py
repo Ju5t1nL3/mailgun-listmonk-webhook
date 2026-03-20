@@ -141,6 +141,45 @@ async def test_insert_campaign_uuid_when_flag_disabled(mock_event, mock_http_cli
 
 
 # ---------------------------------------- #
+#  Tests: Error message                    #
+# ---------------------------------------- #
+@pytest.mark.asyncio
+async def test_combines_multiple_reasons(mock_event, mock_http_client):
+    message = "550"
+    description = "Mailbox unavailable"
+    event = mock_event(
+        delivery_status=DeliveryStatus(message=message, description=description)
+    )
+    await forward_bounce(event, mock_http_client)
+    payload = mock_http_client.post.call_args.kwargs["json"]
+    assert payload["meta"]["reason"] == message + " | " + description
+
+
+@pytest.mark.asyncio
+async def test_use_default_reason_when_none_provided(mock_event, mock_http_client):
+    message = None
+    description = None
+    event = mock_event(
+        delivery_status=DeliveryStatus(message=message, description=description)
+    )
+    await forward_bounce(event, mock_http_client)
+    payload = mock_http_client.post.call_args.kwargs["json"]
+    assert payload["meta"]["reason"] == "No reason provided"
+
+
+@pytest.mark.asyncio
+async def test_use_only_one_reason(mock_event, mock_http_client):
+    message = "550 User unknown"
+    description = None
+    event = mock_event(
+        delivery_status=DeliveryStatus(message=message, description=description)
+    )
+    await forward_bounce(event, mock_http_client)
+    payload = mock_http_client.post.call_args.kwargs["json"]
+    assert payload["meta"]["reason"] == message
+
+
+# ---------------------------------------- #
 #  Tests: Network Exceptions               #
 # ---------------------------------------- #
 @pytest.mark.asyncio
