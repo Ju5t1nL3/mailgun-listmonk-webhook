@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class EventType(StrEnum):
@@ -40,4 +40,4 @@ class EventData(BaseModel):
         default_factory=UserVariables, validation_alias="user-variables"
     )
 
-
+    model_config = ConfigDict(populate_by_name=True)
