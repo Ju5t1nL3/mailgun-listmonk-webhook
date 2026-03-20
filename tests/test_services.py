@@ -104,3 +104,35 @@ async def test_maps_default_severity_to_hard_bounce(mock_event, mock_http_client
     await forward_bounce(event, mock_http_client)
     payload = mock_http_client.post.call_args.kwargs["json"]
     assert payload["type"] == ListmonkSeverity.HARD
+
+
+# ---------------------------------------- #
+#  Tests: "ENABLED_CAMPAIGN_TRACKING"      #
+#  flag                                    #
+# ---------------------------------------- #
+@pytest.mark.asyncio
+@patch("app.services.settings.ENABLE_CAMPAIGN_TRACKING", True)
+async def test_insert_campaign_uuid_when_flag_enabled(mock_event, mock_http_client):
+    test_campaign_uuid = "12345"
+    event = mock_event(campaign_uuid=test_campaign_uuid)
+    await forward_bounce(event, mock_http_client)
+    payload = mock_http_client.post.call_args.kwargs["json"]
+    assert payload["campaign_uuid"] == test_campaign_uuid
+
+
+@pytest.mark.asyncio
+@patch("app.services.settings.ENABLE_CAMPAIGN_TRACKING", True)
+async def test_no_campaign_uuid_when_flag_enabeld(mock_event, mock_http_client):
+    event = mock_event(campaign_uuid=None)
+    await forward_bounce(event, mock_http_client)
+    payload = mock_http_client.post.call_args.kwargs["json"]
+    assert "campaign_uuid" not in payload
+
+
+@pytest.mark.asyncio
+@patch("app.services.settings.ENABLE_CAMPAIGN_TRACKING", False)
+async def test_insert_campaign_uuid_when_flag_disabled(mock_event, mock_http_client):
+    event = mock_event(campaign_uuid="12345")
+    await forward_bounce(event, mock_http_client)
+    payload = mock_http_client.post.call_args.kwargs["json"]
+    assert "campaign_uuid" not in payload
