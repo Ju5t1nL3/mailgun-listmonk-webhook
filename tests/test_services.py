@@ -1,6 +1,8 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import httpx
 import pytest
+from fastapi import HTTPException
 
 from app.schemas import (
     DeliveryStatus,
@@ -136,3 +138,28 @@ async def test_insert_campaign_uuid_when_flag_disabled(mock_event, mock_http_cli
     await forward_bounce(event, mock_http_client)
     payload = mock_http_client.post.call_args.kwargs["json"]
     assert "campaign_uuid" not in payload
+
+
+# ---------------------------------------- #
+#  Tests: Network Exceptions               #
+# ---------------------------------------- #
+@pytest.mark.asyncio
+async def test_handle_request_error(mock_event, mock_http_client):
+    mock_http_client.post.side_effect = httpx.RequestError("Timeout")
+
+    with pytest.raises(HTTPException) as exc:
+        await forward_bounce(mock_event(), mock_http_client)
+    assert exc.value.status_code == 500
+
+
+@pytest.mark.asyncio
+async def test_handle_http_status_error(mock_event, mock_http_client):
+    mock_response = MagicMock()
+    mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+        "401", request=MagicMock(), response=MagicMock()
+    )
+    mock_http_client.post.return_value = mock_response
+
+    with pytest.raises(HTTPException) as exc:
+        await forward_bounce(mock_event(), mock_http_client)
+    assert exc.value.status_code == 500
