@@ -65,7 +65,7 @@ async def forward_bounce(
     try:
         response = await client.post(
             f"{settings.LISTMONK_URL}/webhooks/bounce",
-            json=listmonk_payload.model_dump(),
+            json=listmonk_payload.model_dump(exclude_none=True),
             auth=(settings.LISTMONK_API_USER, settings.LISTMONK_API_TOKEN),
             timeout=5.0,
         )
