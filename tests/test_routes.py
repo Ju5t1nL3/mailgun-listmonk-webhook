@@ -60,3 +60,11 @@ async def test_webhook_accepts_valid_signature(
 
     mock_forward.assert_awaited_once()
     assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_webhook_rejects_malformed_json(async_client):
+    bad_payload = {"hi": "123"}
+    response = await async_client.post("/webhook", json=bad_payload)
+
+    assert response.status_code == 422
