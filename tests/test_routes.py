@@ -5,7 +5,14 @@ import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
 from app.main import app
-from app.schemas import EventData, EventType, MailgunPayload, MailgunSignature
+from app.schemas import (
+    EventData,
+    EventType,
+    MailgunPayload,
+    MailgunSignature,
+    WebhookResponse,
+    WebhookStatus,
+)
 
 
 @pytest.fixture
@@ -35,3 +42,21 @@ async def test_webhook_rejects_invalid_signature(
 
     mock_forward.assert_not_awaited()
     assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+@patch("app.main.verify_mailgun_signature", return_value=True)
+@patch("app.main.forward_bounce", new_callable=AsyncMock)
+async def test_webhook_accepts_valid_signature(
+    mock_forward, mock_verify, valid_payload, async_client
+):
+    mock_forward.return_value = WebhookResponse(
+        webhook_status=WebhookStatus.SUCCESS, message="Webhook forwarded"
+    )
+
+    response = await async_client.post(
+        "/webhook", json=valid_payload.model_dump(exclude_none=True)
+    )
+
+    mock_forward.assert_awaited_once()
+    assert response.status_code == 200
