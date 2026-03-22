@@ -25,9 +25,9 @@ def valid_payload() -> MailgunPayload:
 @patch("app.main.verify_mailgun_signature", return_value=False)
 @patch("app.main.forward_bounce", new_callable=AsyncMock)
 async def test_webhook_rejects_invalid_signature(
-    mock_forward, mock_verify, valid_payload, async_client
+    mock_forward, mock_verify, valid_payload, test_client
 ):
-    response = await async_client.post(
+    response = await test_client.post(
         "/webhook", json=valid_payload.model_dump(exclude_none=True)
     )
 
@@ -39,13 +39,13 @@ async def test_webhook_rejects_invalid_signature(
 @patch("app.main.verify_mailgun_signature", return_value=True)
 @patch("app.main.forward_bounce", new_callable=AsyncMock)
 async def test_webhook_accepts_valid_signature(
-    mock_forward, mock_verify, valid_payload, async_client
+    mock_forward, mock_verify, valid_payload, test_client
 ):
     mock_forward.return_value = WebhookResponse(
         webhook_status=WebhookStatus.SUCCESS, message="Webhook forwarded"
     )
 
-    response = await async_client.post(
+    response = await test_client.post(
         "/webhook", json=valid_payload.model_dump(exclude_none=True)
     )
 
@@ -54,9 +54,9 @@ async def test_webhook_accepts_valid_signature(
 
 
 @pytest.mark.asyncio
-async def test_webhook_rejects_malformed_json(async_client):
+async def test_webhook_rejects_malformed_json(test_client):
     bad_payload = {"hi": "123"}
-    response = await async_client.post("/webhook", json=bad_payload)
+    response = await test_client.post("/webhook", json=bad_payload)
 
     assert response.status_code == 422
 
@@ -65,12 +65,12 @@ async def test_webhook_rejects_malformed_json(async_client):
 @patch("app.main.verify_mailgun_signature", return_value=True)
 @patch("app.main.forward_bounce", new_callable=AsyncMock)
 async def test_webhook_returns_500_on_failure(
-    mock_forward, mock_verify, valid_payload, async_client
+    mock_forward, mock_verify, valid_payload, test_client
 ):
     detail = "Listmonk timeout"
     mock_forward.side_effect = HTTPException(status_code=500, detail=detail)
 
-    response = await async_client.post(
+    response = await test_client.post(
         "/webhook", json=valid_payload.model_dump(exclude_none=True)
     )
 

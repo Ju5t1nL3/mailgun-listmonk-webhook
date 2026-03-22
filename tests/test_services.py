@@ -20,10 +20,10 @@ from app.utils.config import settings
 #  Tests: ignore irrelevant events         #
 # ---------------------------------------- #
 @pytest.mark.asyncio
-async def test_ignore_irrelevant_events(mock_event, mock_http_client):
+async def test_ignore_irrelevant_events(event_factory, mock_listmonk_client):
     event_type = EventType.ACCEPTED
-    event = mock_event(event_type=event_type)
-    result = await forward_bounce(event, mock_http_client)
+    event = event_factory(event_type=event_type)
+    result = await forward_bounce(event, mock_listmonk_client)
     assert result.webhook_status == WebhookStatus.IGNORED
     assert result.error_code == WebhookErrorCode.EVENTTYPEIGNORED
 
@@ -33,26 +33,32 @@ async def test_ignore_irrelevant_events(mock_event, mock_http_client):
 # ---------------------------------------- #
 @pytest.mark.asyncio
 @patch("app.services.settings.REQUIRE_LISTMONK_TAG", True)
-async def test_ignore_missing_tag_when_flag_enabled(mock_event, mock_http_client):
-    event = mock_event(tags=[])
-    result = await forward_bounce(event, mock_http_client)
+async def test_ignore_missing_tag_when_flag_enabled(
+    event_factory, mock_listmonk_client
+):
+    event = event_factory(tags=[])
+    result = await forward_bounce(event, mock_listmonk_client)
     assert result.webhook_status == WebhookStatus.IGNORED
     assert result.error_code == WebhookErrorCode.NOTFROMLISTMONK
 
 
 @pytest.mark.asyncio
 @patch("app.services.settings.REQUIRE_LISTMONK_TAG", True)
-async def test_accept_listmonk_tag_when_flag_enabeld(mock_event, mock_http_client):
-    event = mock_event(tags=["listmonk"])
-    result = await forward_bounce(event, mock_http_client)
+async def test_accept_listmonk_tag_when_flag_enabeld(
+    event_factory, mock_listmonk_client
+):
+    event = event_factory(tags=["listmonk"])
+    result = await forward_bounce(event, mock_listmonk_client)
     assert result.webhook_status == WebhookStatus.SUCCESS
 
 
 @pytest.mark.asyncio
 @patch("app.services.settings.REQUIRE_LISTMONK_TAG", False)
-async def test_accept_listmonk_tag_when_flag_disabled(mock_event, mock_http_client):
-    event = mock_event(tags=[])
-    result = await forward_bounce(event, mock_http_client)
+async def test_accept_listmonk_tag_when_flag_disabled(
+    event_factory, mock_listmonk_client
+):
+    event = event_factory(tags=[])
+    result = await forward_bounce(event, mock_listmonk_client)
     assert result.webhook_status == WebhookStatus.SUCCESS
 
 
@@ -61,18 +67,22 @@ async def test_accept_listmonk_tag_when_flag_disabled(mock_event, mock_http_clie
 #  listmonk severity                       #
 # ---------------------------------------- #
 @pytest.mark.asyncio
-async def test_maps_temporary_severity_to_soft_bounce(mock_event, mock_http_client):
-    event = mock_event(severity=EventSeverity.TEMPORARY)
-    await forward_bounce(event, mock_http_client)
-    payload = mock_http_client.post.call_args.kwargs["json"]
+async def test_maps_temporary_severity_to_soft_bounce(
+    event_factory, mock_listmonk_client
+):
+    event = event_factory(severity=EventSeverity.TEMPORARY)
+    await forward_bounce(event, mock_listmonk_client)
+    payload = mock_listmonk_client.post.call_args.kwargs["json"]
     assert payload["type"] == ListmonkSeverity.SOFT
 
 
 @pytest.mark.asyncio
-async def test_maps_default_severity_to_hard_bounce(mock_event, mock_http_client):
-    event = mock_event(severity=EventSeverity.PERMANENT)
-    await forward_bounce(event, mock_http_client)
-    payload = mock_http_client.post.call_args.kwargs["json"]
+async def test_maps_default_severity_to_hard_bounce(
+    event_factory, mock_listmonk_client
+):
+    event = event_factory(severity=EventSeverity.PERMANENT)
+    await forward_bounce(event, mock_listmonk_client)
+    payload = mock_listmonk_client.post.call_args.kwargs["json"]
     assert payload["type"] == ListmonkSeverity.HARD
 
 
@@ -82,29 +92,33 @@ async def test_maps_default_severity_to_hard_bounce(mock_event, mock_http_client
 # ---------------------------------------- #
 @pytest.mark.asyncio
 @patch("app.services.settings.ENABLE_CAMPAIGN_TRACKING", True)
-async def test_insert_campaign_uuid_when_flag_enabled(mock_event, mock_http_client):
+async def test_insert_campaign_uuid_when_flag_enabled(
+    event_factory, mock_listmonk_client
+):
     test_campaign_uuid = "12345"
-    event = mock_event(campaign_uuid=test_campaign_uuid)
-    await forward_bounce(event, mock_http_client)
-    payload = mock_http_client.post.call_args.kwargs["json"]
+    event = event_factory(campaign_uuid=test_campaign_uuid)
+    await forward_bounce(event, mock_listmonk_client)
+    payload = mock_listmonk_client.post.call_args.kwargs["json"]
     assert payload["campaign_uuid"] == test_campaign_uuid
 
 
 @pytest.mark.asyncio
 @patch("app.services.settings.ENABLE_CAMPAIGN_TRACKING", True)
-async def test_no_campaign_uuid_when_flag_enabeld(mock_event, mock_http_client):
-    event = mock_event(campaign_uuid=None)
-    await forward_bounce(event, mock_http_client)
-    payload = mock_http_client.post.call_args.kwargs["json"]
+async def test_no_campaign_uuid_when_flag_enabeld(event_factory, mock_listmonk_client):
+    event = event_factory(campaign_uuid=None)
+    await forward_bounce(event, mock_listmonk_client)
+    payload = mock_listmonk_client.post.call_args.kwargs["json"]
     assert "campaign_uuid" not in payload
 
 
 @pytest.mark.asyncio
 @patch("app.services.settings.ENABLE_CAMPAIGN_TRACKING", False)
-async def test_insert_campaign_uuid_when_flag_disabled(mock_event, mock_http_client):
-    event = mock_event(campaign_uuid="12345")
-    await forward_bounce(event, mock_http_client)
-    payload = mock_http_client.post.call_args.kwargs["json"]
+async def test_insert_campaign_uuid_when_flag_disabled(
+    event_factory, mock_listmonk_client
+):
+    event = event_factory(campaign_uuid="12345")
+    await forward_bounce(event, mock_listmonk_client)
+    payload = mock_listmonk_client.post.call_args.kwargs["json"]
     assert "campaign_uuid" not in payload
 
 
@@ -112,38 +126,40 @@ async def test_insert_campaign_uuid_when_flag_disabled(mock_event, mock_http_cli
 #  Tests: Error message                    #
 # ---------------------------------------- #
 @pytest.mark.asyncio
-async def test_combines_multiple_reasons(mock_event, mock_http_client):
+async def test_combines_multiple_reasons(event_factory, mock_listmonk_client):
     message = "550"
     description = "Mailbox unavailable"
-    event = mock_event(
+    event = event_factory(
         delivery_status=DeliveryStatus(message=message, description=description)
     )
-    await forward_bounce(event, mock_http_client)
-    payload = mock_http_client.post.call_args.kwargs["json"]
+    await forward_bounce(event, mock_listmonk_client)
+    payload = mock_listmonk_client.post.call_args.kwargs["json"]
     assert payload["meta"]["reason"] == message + " | " + description
 
 
 @pytest.mark.asyncio
-async def test_use_default_reason_when_none_provided(mock_event, mock_http_client):
+async def test_use_default_reason_when_none_provided(
+    event_factory, mock_listmonk_client
+):
     message = None
     description = None
-    event = mock_event(
+    event = event_factory(
         delivery_status=DeliveryStatus(message=message, description=description)
     )
-    await forward_bounce(event, mock_http_client)
-    payload = mock_http_client.post.call_args.kwargs["json"]
+    await forward_bounce(event, mock_listmonk_client)
+    payload = mock_listmonk_client.post.call_args.kwargs["json"]
     assert payload["meta"]["reason"] == "No reason provided"
 
 
 @pytest.mark.asyncio
-async def test_use_only_one_reason(mock_event, mock_http_client):
+async def test_use_only_one_reason(event_factory, mock_listmonk_client):
     message = "550 User unknown"
     description = None
-    event = mock_event(
+    event = event_factory(
         delivery_status=DeliveryStatus(message=message, description=description)
     )
-    await forward_bounce(event, mock_http_client)
-    payload = mock_http_client.post.call_args.kwargs["json"]
+    await forward_bounce(event, mock_listmonk_client)
+    payload = mock_listmonk_client.post.call_args.kwargs["json"]
     assert payload["meta"]["reason"] == message
 
 
@@ -151,24 +167,24 @@ async def test_use_only_one_reason(mock_event, mock_http_client):
 #  Tests: Network Exceptions               #
 # ---------------------------------------- #
 @pytest.mark.asyncio
-async def test_handle_request_error(mock_event, mock_http_client):
-    mock_http_client.post.side_effect = httpx.RequestError("Timeout")
+async def test_handle_request_error(event_factory, mock_listmonk_client):
+    mock_listmonk_client.post.side_effect = httpx.RequestError("Timeout")
 
     with pytest.raises(HTTPException) as exc:
-        await forward_bounce(mock_event(), mock_http_client)
+        await forward_bounce(event_factory(), mock_listmonk_client)
     assert exc.value.status_code == 500
 
 
 @pytest.mark.asyncio
-async def test_handle_http_status_error(mock_event, mock_http_client):
+async def test_handle_http_status_error(event_factory, mock_listmonk_client):
     mock_response = MagicMock()
     mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
         "401", request=MagicMock(), response=MagicMock()
     )
-    mock_http_client.post.return_value = mock_response
+    mock_listmonk_client.post.return_value = mock_response
 
     with pytest.raises(HTTPException) as exc:
-        await forward_bounce(mock_event(), mock_http_client)
+        await forward_bounce(event_factory(), mock_listmonk_client)
     assert exc.value.status_code == 500
 
 
@@ -176,12 +192,12 @@ async def test_handle_http_status_error(mock_event, mock_http_client):
 #  Tests: Use correct url and credentials  #
 # ---------------------------------------- #
 @pytest.mark.asyncio
-async def test_use_correct_url_and_credentials(mock_event, mock_http_client):
-    await forward_bounce(mock_event(), mock_http_client)
+async def test_use_correct_url_and_credentials(event_factory, mock_listmonk_client):
+    await forward_bounce(event_factory(), mock_listmonk_client)
 
-    args, kwargs = mock_http_client.post.call_args
+    args, kwargs = mock_listmonk_client.post.call_args
 
-    call_args, call_kwargs = mock_http_client.post.call_args
+    call_args, call_kwargs = mock_listmonk_client.post.call_args
     assert call_args[0] == f"{settings.LISTMONK_URL}/webhooks/bounce"
     assert call_kwargs["auth"] == (
         settings.LISTMONK_API_USER,

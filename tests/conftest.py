@@ -15,7 +15,7 @@ from app.schemas import (
 
 
 @pytest.fixture
-def mock_event():
+def event_factory():
     def _create(
         event_type: EventType = EventType.FAILED,
         severity: EventSeverity = EventSeverity.PERMANENT,
@@ -38,7 +38,7 @@ def mock_event():
 
 
 @pytest.fixture
-def mock_http_client():
+def mock_listmonk_client():
     mock_client = AsyncMock()
     mock_client.post.return_value = MagicMock()
 
@@ -46,7 +46,7 @@ def mock_http_client():
 
 
 @pytest_asyncio.fixture
-async def async_client():
+async def test_client():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
