@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import httpx
 import pytest
@@ -6,47 +6,14 @@ from fastapi import HTTPException
 
 from app.schemas import (
     DeliveryStatus,
-    EventData,
     EventSeverity,
     EventType,
-    UserVariables,
     WebhookErrorCode,
     WebhookStatus,
 )
 from app.schemas.listmonk import ListmonkSeverity
 from app.services import forward_bounce
 from app.utils.config import settings
-
-
-@pytest.fixture
-def mock_event():
-    def _create(
-        event_type: EventType = EventType.FAILED,
-        severity: EventSeverity = EventSeverity.PERMANENT,
-        delivery_status: DeliveryStatus = DeliveryStatus(
-            message="Failed", description=None
-        ),
-        tags: list[str] = ["listmonk"],
-        campaign_uuid: str = "123-abc",
-    ) -> EventData:
-        return EventData(
-            event=event_type,
-            recipient="test@tamuhack.org",
-            severity=severity,
-            delivery_status=delivery_status,
-            tags=tags,
-            user_variables=UserVariables(campaign_uuid=campaign_uuid),
-        )
-
-    return _create
-
-
-@pytest.fixture
-def mock_http_client():
-    mock_client = AsyncMock()
-    mock_client.post.return_value = MagicMock()
-
-    return mock_client
 
 
 # ---------------------------------------- #
