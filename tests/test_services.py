@@ -15,6 +15,7 @@ from app.schemas import (
 )
 from app.schemas.listmonk import ListmonkSeverity
 from app.services import forward_bounce
+from app.utils.config import settings
 
 
 @pytest.fixture
@@ -202,3 +203,20 @@ async def test_handle_http_status_error(mock_event, mock_http_client):
     with pytest.raises(HTTPException) as exc:
         await forward_bounce(mock_event(), mock_http_client)
     assert exc.value.status_code == 500
+
+
+# ---------------------------------------- #
+#  Tests: Use correct url and credentials  #
+# ---------------------------------------- #
+@pytest.mark.asyncio
+async def test_use_correct_url_and_credentials(mock_event, mock_http_client):
+    await forward_bounce(mock_event(), mock_http_client)
+
+    args, kwargs = mock_http_client.post.call_args
+
+    call_args, call_kwargs = mock_http_client.post.call_args
+    assert call_args[0] == f"{settings.LISTMONK_URL}/webhooks/bounce"
+    assert call_kwargs["auth"] == (
+        settings.LISTMONK_API_USER,
+        settings.LISTMONK_API_TOKEN,
+    )
