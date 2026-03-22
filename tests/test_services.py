@@ -195,9 +195,8 @@ async def test_handle_http_status_error(event_factory, mock_listmonk_client):
 async def test_use_correct_url_and_credentials(event_factory, mock_listmonk_client):
     await forward_bounce(event_factory(), mock_listmonk_client)
 
-    args, kwargs = mock_listmonk_client.post.call_args
-
     call_args, call_kwargs = mock_listmonk_client.post.call_args
+
     assert call_args[0] == f"{settings.LISTMONK_URL}/webhooks/bounce"
     assert call_kwargs["auth"] == (
         settings.LISTMONK_API_USER,
