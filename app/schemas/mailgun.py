@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.schemas.event import EventData
 
@@ -12,3 +12,5 @@ class MailgunSignature(BaseModel):
 class MailgunPayload(BaseModel):
     signature: MailgunSignature
     event_data: EventData = Field(validation_alias="event-data")
+
+    model_config = ConfigDict(populate_by_name=True)
