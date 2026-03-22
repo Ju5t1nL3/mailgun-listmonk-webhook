@@ -2,6 +2,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 import pytest_asyncio
+from fastapi import HTTPException
 from httpx import ASGITransport, AsyncClient
 
 from app.main import app
@@ -68,3 +69,20 @@ async def test_webhook_rejects_malformed_json(async_client):
     response = await async_client.post("/webhook", json=bad_payload)
 
     assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+@patch("app.main.verify_mailgun_signature", return_value=True)
+@patch("app.main.forward_bounce", new_callable=AsyncMock)
+async def test_webhook_returns_500_on_failure(
+    mock_forward, mock_verify, valid_payload, async_client
+):
+    detail = "Listmonk timeout"
+    mock_forward.side_effect = HTTPException(status_code=500, detail=detail)
+
+    response = await async_client.post(
+        "/webhook", json=valid_payload.model_dump(exclude_none=True)
+    )
+
+    assert response.status_code == 500
+    assert response.json() == {"detail": detail}
