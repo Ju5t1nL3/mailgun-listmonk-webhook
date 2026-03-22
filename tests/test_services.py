@@ -44,7 +44,7 @@ async def test_ignore_missing_tag_when_flag_enabled(
 
 @pytest.mark.asyncio
 @patch("app.services.settings.REQUIRE_LISTMONK_TAG", True)
-async def test_accept_listmonk_tag_when_flag_enabeld(
+async def test_accept_listmonk_tag_when_flag_enabled(
     event_factory, mock_listmonk_client
 ):
     event = event_factory(tags=["listmonk"])
