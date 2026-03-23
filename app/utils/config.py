@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     Global application configuration loaded from env variables.
     Pydantic auto validates these types on server startup.
     """
+
     MAILGUN_SIGNING_KEY: str
 
     LISTMONK_URL: str

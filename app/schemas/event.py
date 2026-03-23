@@ -31,6 +31,7 @@ class EventData(BaseModel):
     """
     The core Mailgun event payload.
     """
+
     event: EventType
     recipient: str
     severity: EventSeverity | None = EventSeverity.PERMANENT
