@@ -26,3 +26,23 @@ def test_verify_mailgun_signature_invalid() -> None:
     invalid_signature = "this_signature_is_invalid"
 
     assert verify_mailgun_signature(timestamp, token, invalid_signature) is False
+
+
+def test_verify_mailgun_signature_expired_timestamp() -> None:
+    timestamp = str(int(time.time() - 1000))
+    token = "test_token_123"
+    valid_signature = hmac.new(
+        key=settings.MAILGUN_SIGNING_KEY.encode(),
+        msg=(timestamp + token).encode(),
+        digestmod=hashlib.sha256,
+    ).hexdigest()
+
+    assert verify_mailgun_signature(timestamp, token, valid_signature) is False
+
+
+def test_verify_mailgun_signature_invalid_timestamp_format() -> None:
+    timestamp = "not_an_integer"
+    token = "test_token_123"
+    signature = "signature"
+
+    assert verify_mailgun_signature(timestamp, token, signature) is False
