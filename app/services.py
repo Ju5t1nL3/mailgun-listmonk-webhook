@@ -22,6 +22,18 @@ logger = logging.getLogger(__name__)
 async def forward_bounce(
     event_data: EventData, client: httpx.AsyncClient
 ) -> WebhookResponse:
+    """
+    Translates Mailgun bounce events and forwards to
+    Listmonk API
+
+    Only filters for fail/complaint bounces. Filters
+    out un-tagged emails (if-configured). Maps Mailgun's
+    severities to Listmonk's soft/hard bounce standards.
+
+    Raises:
+        HTTPException(500): If Listmonk is unreachale or
+        rejects payload
+    """
     event_type = event_data.event
 
     # ignore if listmonk already tracks it
