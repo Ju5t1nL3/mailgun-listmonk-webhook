@@ -76,7 +76,9 @@ async def forward_bounce(
         logger.error(f"Listmonk networking failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to reach Listmonk")
     except httpx.HTTPStatusError as e:
-        logger.error(f"Listmonk rejected payload: {e}")
+        logger.error(
+            f"Listmonk rejected payload. Status: {e.response.status_code}, Detail: {e.response.text}"
+        )
         raise HTTPException(status_code=500, detail="Listmonk returned an error")
 
     return WebhookResponse(
