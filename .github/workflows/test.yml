@@ -46,3 +46,6 @@ jobs:
           LISTMONK_URL: http://test-listmonk.com
           LISTMONK_API_USER: test-user
           LISTMONK_API_TOKEN: test-token
+
+      - name: Verify Dockerfile builds
+        run: docker build -t test-build .
