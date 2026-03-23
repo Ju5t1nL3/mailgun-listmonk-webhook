@@ -192,6 +192,9 @@ async def test_handle_http_status_error(
     event_factory: Callable[..., EventData], mock_listmonk_client: AsyncMock
 ) -> None:
     mock_response = MagicMock()
+    mock_response.status_code = 400
+    mock_response.text = "Bad Request JSON"
+
     mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
         "401", request=MagicMock(), response=MagicMock()
     )
