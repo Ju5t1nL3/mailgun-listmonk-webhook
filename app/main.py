@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -7,6 +8,12 @@ from fastapi import FastAPI, HTTPException, Request
 from app.schemas import MailgunPayload, WebhookResponse
 from app.services import forward_bounce
 from app.utils.crypto import verify_mailgun_signature
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 
 @asynccontextmanager
