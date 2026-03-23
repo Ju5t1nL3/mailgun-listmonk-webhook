@@ -23,7 +23,7 @@ app = FastAPI(lifespan=lifespan)
 async def receive_webhook(
     request: Request,
     payload: MailgunPayload,
-):
+) -> WebhookResponse:
     client = request.app.state.http_client
 
     payload_signature = payload.signature
