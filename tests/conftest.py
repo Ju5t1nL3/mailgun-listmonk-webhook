@@ -4,7 +4,7 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
-from app.main import app
+from app.main import app, lifespan
 from app.schemas import (
     DeliveryStatus,
     EventData,
@@ -47,6 +47,7 @@ def mock_listmonk_client():
 
 @pytest_asyncio.fixture
 async def test_client():
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        yield client
+    async with lifespan(app):
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            yield client
