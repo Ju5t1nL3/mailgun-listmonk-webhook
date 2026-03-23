@@ -17,6 +17,13 @@ from app.schemas import (
 
 @pytest.fixture
 def event_factory() -> Callable[..., EventData]:
+    """
+    Provides a factory function to generate mock Mailgun EventData.
+
+    Allows individual tests to override specific fields (like tags
+    or severity) while being structurally valid for defaults
+    """
+
     def _create(
         event_type: EventType = EventType.FAILED,
         severity: EventSeverity = EventSeverity.PERMANENT,
@@ -40,6 +47,12 @@ def event_factory() -> Callable[..., EventData]:
 
 @pytest.fixture
 def mock_listmonk_client() -> AsyncMock:
+    """
+    Provides an AsyncMock of the internal HTTP client
+
+    Injected into the service layer to fake network
+    requests to Listmonk
+    """
     mock_client = AsyncMock()
     mock_client.post.return_value = MagicMock()
 
@@ -48,6 +61,15 @@ def mock_listmonk_client() -> AsyncMock:
 
 @pytest_asyncio.fixture
 async def test_client() -> AsyncGenerator[AsyncClient, None]:
+    """
+    Simulates incoming Mailgun requests by bypassing
+    the ASGI web server
+
+    Explicitly triggers the FastAPI `lifespan` context
+    manager to ensure the internal connection pools
+    (i.e., app.state.http_client) are properly initialized
+    before the test runs.
+    """
     async with lifespan(app):
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
