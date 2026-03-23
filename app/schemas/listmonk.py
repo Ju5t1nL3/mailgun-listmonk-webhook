@@ -13,6 +13,11 @@ class ListmonkMeta(BaseModel):
 
 
 class ListmonkPayload(BaseModel):
+    """
+    The strict JSON structure required by Listmonk's
+    bounce webhook endpoint.
+    """
+
     email: str
     source: str = "mailgun_webhook"
     type: ListmonkSeverity

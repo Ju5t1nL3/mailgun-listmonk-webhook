@@ -10,6 +10,9 @@ class MailgunSignature(BaseModel):
 
 
 class MailgunPayload(BaseModel):
+    """
+    The top level JSON structure sent by mailgun.
+    """
     signature: MailgunSignature
     event_data: EventData = Field(validation_alias="event-data")
 
