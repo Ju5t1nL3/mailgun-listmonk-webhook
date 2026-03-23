@@ -1,3 +1,4 @@
+from typing import AsyncGenerator, Callable
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -15,7 +16,7 @@ from app.schemas import (
 
 
 @pytest.fixture
-def event_factory():
+def event_factory() -> Callable[..., EventData]:
     def _create(
         event_type: EventType = EventType.FAILED,
         severity: EventSeverity = EventSeverity.PERMANENT,
@@ -38,7 +39,7 @@ def event_factory():
 
 
 @pytest.fixture
-def mock_listmonk_client():
+def mock_listmonk_client() -> AsyncMock:
     mock_client = AsyncMock()
     mock_client.post.return_value = MagicMock()
 
@@ -46,7 +47,7 @@ def mock_listmonk_client():
 
 
 @pytest_asyncio.fixture
-async def test_client():
+async def test_client() -> AsyncGenerator[AsyncClient, None]:
     async with lifespan(app):
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
