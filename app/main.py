@@ -1,25 +1,31 @@
-from typing import Annotated
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 
 import httpx
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 
 from app.schemas import MailgunPayload, WebhookResponse
 from app.services import forward_bounce
 from app.utils.crypto import verify_mailgun_signature
 
-app = FastAPI()
 
-
-async def get_http_client():
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     async with httpx.AsyncClient() as client:
-        yield client
+        app.state.http_client = client
+        yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.post("/webhook", response_model=WebhookResponse)
 async def receive_webhook(
+    request: Request,
     payload: MailgunPayload,
-    client: Annotated[httpx.AsyncClient, Depends(get_http_client)],
 ):
+    client = request.app.state.http_client
+
     payload_signature = payload.signature
     if not verify_mailgun_signature(
         payload_signature.timestamp,
