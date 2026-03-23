@@ -104,7 +104,7 @@ async def test_insert_campaign_uuid_when_flag_enabled(
 
 @pytest.mark.asyncio
 @patch("app.services.settings.ENABLE_CAMPAIGN_TRACKING", True)
-async def test_no_campaign_uuid_when_flag_enabeld(event_factory, mock_listmonk_client):
+async def test_no_campaign_uuid_when_flag_enabled(event_factory, mock_listmonk_client):
     event = event_factory(campaign_uuid=None)
     await forward_bounce(event, mock_listmonk_client)
     payload = mock_listmonk_client.post.call_args.kwargs["json"]
