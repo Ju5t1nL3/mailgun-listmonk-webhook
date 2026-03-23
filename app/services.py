@@ -1,3 +1,5 @@
+import logging
+
 import httpx
 from fastapi import HTTPException
 
@@ -13,6 +15,8 @@ from app.schemas import (
     WebhookStatus,
 )
 from app.utils.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 async def forward_bounce(
@@ -69,10 +73,10 @@ async def forward_bounce(
         )
         response.raise_for_status()
     except httpx.RequestError as e:
-        print(f"Listmonk networking failed: {e}")
+        logger.error(f"Listmonk networking failed: {e}")
         raise HTTPException(status_code=500, detail="Failed to reach Listmonk")
     except httpx.HTTPStatusError as e:
-        print(f"Listmonk rejected payload: {e}")
+        logger.error(f"Listmonk rejected payload: {e}")
         raise HTTPException(status_code=500, detail="Listmonk returned an error")
 
     return WebhookResponse(
