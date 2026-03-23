@@ -1,10 +1,17 @@
 import hashlib
 import hmac
+import time
 
 from app.utils.config import settings
 
 
 def verify_mailgun_signature(timestamp: str, token: str, signature: str) -> bool:
+    try:
+        if abs(time.time() - int(timestamp)) > 900:
+            return False
+    except ValueError:
+        return False
+
     hmac_digest = hmac.new(
         key=settings.MAILGUN_SIGNING_KEY.encode(),
         msg=(timestamp + token).encode(),
