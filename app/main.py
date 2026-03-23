@@ -12,8 +12,9 @@ from app.utils.crypto import verify_mailgun_signature
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """
-    Initializes the global HTTP client pool in the application state.
-    This ensures connection pooling across all requests and prevents socket exhaustion.
+    Initializes the global HTTP client pool in the application
+    state. This ensures connection pooling across all requests
+    and prevents socket exhaustion.
     """
     async with httpx.AsyncClient() as client:
         app.state.http_client = client
@@ -29,10 +30,12 @@ async def receive_webhook(
     payload: MailgunPayload,
 ) -> WebhookResponse:
     """
-    Validates incoming mailgun webhook signatures and forwards the event to Listmonk.
+    Validates incoming mailgun webhook signatures and
+    forwards the event to Listmonk.
 
     Raises:
-        HTTPException(401): If the mailgun signature is invalid or missing
+        HTTPException(401): If the mailgun signature
+        is invalid or missing
     """
     client = request.app.state.http_client
 
