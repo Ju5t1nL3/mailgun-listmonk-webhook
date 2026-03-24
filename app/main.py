@@ -29,14 +29,18 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         yield
 
 
-is_prod = settings.ENVIRONMENT == Environment.PRODUCTION
+def create_app() -> FastAPI:
+    is_prod = settings.ENVIRONMENT == Environment.PRODUCTION
 
-app = FastAPI(
-    lifespan=lifespan,
-    docs_url=None if is_prod else "/docs",
-    redoc_url=None if is_prod else "/redoc",
-    openapi_url=None if is_prod else "/openapi.json",
-)
+    return FastAPI(
+        lifespan=lifespan,
+        docs_url=None if is_prod else "/docs",
+        redoc_url=None if is_prod else "/redoc",
+        openapi_url=None if is_prod else "/openapi.json",
+    )
+
+
+app = create_app()
 
 
 @app.post("/webhook", response_model=WebhookResponse)
