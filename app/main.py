@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, Request
 
 from app.schemas import MailgunPayload, WebhookResponse
 from app.services import forward_bounce
+from app.utils.config import Environment, settings
 from app.utils.crypto import verify_mailgun_signature
 
 logging.basicConfig(
@@ -28,7 +29,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         yield
 
 
-app = FastAPI(lifespan=lifespan)
+is_prod = settings.ENVIRONMENT == Environment.PRODUCTION
+
+app = FastAPI(
+    lifespan=lifespan,
+    docs_url=None if is_prod else "/docs",
+    redoc_url=None if is_prod else "/redoc",
+    openapi_url=None if is_prod else "/openapi.json",
+)
 
 
 @app.post("/webhook", response_model=WebhookResponse)
