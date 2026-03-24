@@ -5,7 +5,7 @@ import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
-from app.main import create_app
+from app.main import create_app, lifespan
 from app.schemas import (
     DeliveryStatus,
     EventData,
@@ -69,9 +69,10 @@ async def dev_client() -> AsyncGenerator[AsyncClient, None]:
     Uses the default DEVELOPMENT environment
     """
     app = create_app()
-    transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://test") as client:
-        yield client
+    async with lifespan(app):
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            yield client
 
 
 @pytest_asyncio.fixture
@@ -82,6 +83,9 @@ async def prod_client() -> AsyncGenerator[AsyncClient, None]:
     """
     with patch("app.main.settings.ENVIRONMENT", Environment.PRODUCTION):
         app = create_app()
-        transport = ASGITransport(app=app)
-        async with AsyncClient(transport=transport, base_url="http://test") as client:
-            yield client
+        async with lifespan(app):
+            transport = ASGITransport(app=app)
+            async with AsyncClient(
+                transport=transport, base_url="http://test"
+            ) as client:
+                yield client
