@@ -23,15 +23,15 @@ def valid_payload() -> MailgunPayload:
 
 
 @pytest.mark.asyncio
-@patch("app.main.verify_mailgun_signature", return_value=False)
-@patch("app.main.forward_bounce", new_callable=AsyncMock)
+@patch("app.route.verify_mailgun_signature", return_value=False)
+@patch("app.route.forward_bounce", new_callable=AsyncMock)
 async def test_webhook_rejects_invalid_signature(
     mock_forward: AsyncMock,
     mock_verify: MagicMock,
     valid_payload: MailgunPayload,
-    test_client: AsyncClient,
+    dev_client: AsyncClient,
 ) -> None:
-    response = await test_client.post(
+    response = await dev_client.post(
         "/webhook", json=valid_payload.model_dump(exclude_none=True)
     )
 
@@ -40,19 +40,19 @@ async def test_webhook_rejects_invalid_signature(
 
 
 @pytest.mark.asyncio
-@patch("app.main.verify_mailgun_signature", return_value=True)
-@patch("app.main.forward_bounce", new_callable=AsyncMock)
+@patch("app.route.verify_mailgun_signature", return_value=True)
+@patch("app.route.forward_bounce", new_callable=AsyncMock)
 async def test_webhook_accepts_valid_signature(
     mock_forward: AsyncMock,
     mock_verify: MagicMock,
     valid_payload: MailgunPayload,
-    test_client: AsyncClient,
+    dev_client: AsyncClient,
 ) -> None:
     mock_forward.return_value = WebhookResponse(
         webhook_status=WebhookStatus.SUCCESS, message="Webhook forwarded"
     )
 
-    response = await test_client.post(
+    response = await dev_client.post(
         "/webhook", json=valid_payload.model_dump(exclude_none=True)
     )
 
@@ -61,26 +61,26 @@ async def test_webhook_accepts_valid_signature(
 
 
 @pytest.mark.asyncio
-async def test_webhook_rejects_malformed_json(test_client: AsyncClient) -> None:
+async def test_webhook_rejects_malformed_json(dev_client: AsyncClient) -> None:
     bad_payload = {"hi": "123"}
-    response = await test_client.post("/webhook", json=bad_payload)
+    response = await dev_client.post("/webhook", json=bad_payload)
 
     assert response.status_code == 422
 
 
 @pytest.mark.asyncio
-@patch("app.main.verify_mailgun_signature", return_value=True)
-@patch("app.main.forward_bounce", new_callable=AsyncMock)
+@patch("app.route.verify_mailgun_signature", return_value=True)
+@patch("app.route.forward_bounce", new_callable=AsyncMock)
 async def test_webhook_returns_500_on_failure(
     mock_forward: AsyncMock,
     mock_verify: MagicMock,
     valid_payload: MailgunPayload,
-    test_client: AsyncClient,
+    dev_client: AsyncClient,
 ) -> None:
     detail = "Listmonk timeout"
     mock_forward.side_effect = HTTPException(status_code=500, detail=detail)
 
-    response = await test_client.post(
+    response = await dev_client.post(
         "/webhook", json=valid_payload.model_dump(exclude_none=True)
     )
 

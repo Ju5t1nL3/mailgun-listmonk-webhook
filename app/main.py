@@ -3,11 +3,10 @@ from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 import httpx
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI
 
-from app.schemas import MailgunPayload, WebhookResponse
-from app.services import forward_bounce
-from app.utils.crypto import verify_mailgun_signature
+from app.route import router as webhook_router
+from app.utils.config import Environment, settings
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
@@ -28,30 +27,19 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         yield
 
 
-app = FastAPI(lifespan=lifespan)
+def create_app() -> FastAPI:
+    is_prod = settings.ENVIRONMENT == Environment.PRODUCTION
+
+    app = FastAPI(
+        lifespan=lifespan,
+        docs_url=None if is_prod else "/docs",
+        redoc_url=None if is_prod else "/redoc",
+        openapi_url=None if is_prod else "/openapi.json",
+    )
+
+    app.include_router(webhook_router)
+
+    return app
 
 
-@app.post("/webhook", response_model=WebhookResponse)
-async def receive_webhook(
-    request: Request,
-    payload: MailgunPayload,
-) -> WebhookResponse:
-    """
-    Validates incoming mailgun webhook signatures and
-    forwards the event to Listmonk.
-
-    Raises:
-        HTTPException(401): If the mailgun signature
-        is invalid or missing
-    """
-    client = request.app.state.http_client
-
-    payload_signature = payload.signature
-    if not verify_mailgun_signature(
-        payload_signature.timestamp,
-        payload_signature.token,
-        payload_signature.signature,
-    ):
-        raise HTTPException(status_code=401, detail="Invalid Mailgun Signature")
-
-    return await forward_bounce(payload.event_data, client)
+app = create_app()

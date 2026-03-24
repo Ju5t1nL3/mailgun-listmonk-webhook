@@ -1,4 +1,11 @@
+from enum import StrEnum
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Environment(StrEnum):
+    DEVELOPMENT = "development"
+    PRODUCTION = "production"
 
 
 class Settings(BaseSettings):
@@ -6,6 +13,8 @@ class Settings(BaseSettings):
     Global application configuration loaded from env variables.
     Pydantic auto validates these types on server startup.
     """
+
+    ENVIRONMENT: Environment = Environment.DEVELOPMENT
 
     MAILGUN_SIGNING_KEY: str
 
