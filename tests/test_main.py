@@ -1,13 +1,8 @@
-from unittest.mock import patch
-
 import pytest
 from httpx import AsyncClient
 
-from app.utils.config import Environment
-
 
 @pytest.mark.asyncio
-@patch("app.main.settings.ENVIRONMENT", Environment.PRODUCTION)
 async def test_production_hides_docs(
     prod_client: AsyncClient,
 ) -> None:
@@ -20,7 +15,6 @@ async def test_production_hides_docs(
 
 
 @pytest.mark.asyncio
-@patch("app.main.settings.ENVIRONMENT", Environment.PRODUCTION)
 async def test_development_shows_docs(
     dev_client: AsyncClient,
 ) -> None:
