@@ -1,5 +1,5 @@
 from typing import AsyncGenerator, Callable
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import pytest_asyncio
@@ -13,6 +13,7 @@ from app.schemas import (
     EventType,
     UserVariables,
 )
+from app.utils.config import Environment
 
 
 @pytest.fixture
@@ -71,3 +72,16 @@ async def dev_client() -> AsyncGenerator[AsyncClient, None]:
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
         yield client
+
+
+@pytest_asyncio.fixture
+async def prod_client() -> AsyncGenerator[AsyncClient, None]:
+    """
+    Yields a test client where the app was
+    built under PRODUCTION environment settings
+    """
+    with patch("app.main.settings.ENVIRONMENT", Environment.PRODUCTION):
+        app = create_app()
+        transport = ASGITransport(app=app)
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            yield client
