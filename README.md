@@ -59,6 +59,7 @@ You must have:
 
 | Variable | Type | Required | Description |
 | - | - | - | - |
+| `ENVIRONMENT` | Environment ("development" or "production") | No | Default: `"development"`. Specify if you are running code locally of for production. Hides the docs routes if in production |
 | `MAILGUN_SIGNING_KEY` | string | Yes | Found in Mailgun Dashboard > Settings > API Security. |
 | `LISTMONK_URL` | string | Yes | The base URL of your Listmonk instance (e.g., `https://listmonk.yourdomain.com`). |
 | `LISTMONK_API_USER` | string | Yes | Your Listmonk administrator username. |
