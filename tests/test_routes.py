@@ -23,8 +23,8 @@ def valid_payload() -> MailgunPayload:
 
 
 @pytest.mark.asyncio
-@patch("app.main.verify_mailgun_signature", return_value=False)
-@patch("app.main.forward_bounce", new_callable=AsyncMock)
+@patch("app.route.verify_mailgun_signature", return_value=False)
+@patch("app.route.forward_bounce", new_callable=AsyncMock)
 async def test_webhook_rejects_invalid_signature(
     mock_forward: AsyncMock,
     mock_verify: MagicMock,
@@ -40,8 +40,8 @@ async def test_webhook_rejects_invalid_signature(
 
 
 @pytest.mark.asyncio
-@patch("app.main.verify_mailgun_signature", return_value=True)
-@patch("app.main.forward_bounce", new_callable=AsyncMock)
+@patch("app.route.verify_mailgun_signature", return_value=True)
+@patch("app.route.forward_bounce", new_callable=AsyncMock)
 async def test_webhook_accepts_valid_signature(
     mock_forward: AsyncMock,
     mock_verify: MagicMock,
@@ -69,8 +69,8 @@ async def test_webhook_rejects_malformed_json(dev_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-@patch("app.main.verify_mailgun_signature", return_value=True)
-@patch("app.main.forward_bounce", new_callable=AsyncMock)
+@patch("app.route.verify_mailgun_signature", return_value=True)
+@patch("app.route.forward_bounce", new_callable=AsyncMock)
 async def test_webhook_returns_500_on_failure(
     mock_forward: AsyncMock,
     mock_verify: MagicMock,
