@@ -131,7 +131,15 @@ Once your microservice is deployed and accessible via a public URL, you need to 
     - **Permanent Fail** (Hard Bounces)
     - **Temporary Fail** (Soft Bounces)
     - **Spam Complaints** (Treated as Hard Bounces in this microservice)
-6. Save the webhook.
+6. Test the webhook to ensure that it works. If you have set it up correctly, you should receive exactly the following:
+```
+200 OK: {"webhook_status":"success","message":"Webhook forwarded"}
+
+200 OK: {"webhook_status":"success","message":"Webhook forwarded"}
+
+200 OK: {"webhook_status":"success","message":"Webhook forwarded"}
+```
+7. Save the webhook.
 
 --- 
 
