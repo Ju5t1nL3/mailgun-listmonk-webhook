@@ -86,3 +86,25 @@ async def test_webhook_returns_500_on_failure(
 
     assert response.status_code == 500
     assert response.json() == {"detail": detail}
+
+
+@pytest.mark.asyncio
+@patch("app.route.verify_mailgun_signature", return_value=True)
+@patch("app.route.forward_bounce", new_callable=AsyncMock)
+async def test_webhook_response_excludes_none(
+    mock_forward: AsyncMock,
+    mock_verify: MagicMock,
+    valid_payload: MailgunPayload,
+    dev_client: AsyncClient,
+) -> None:
+    mock_forward.return_value = WebhookResponse(
+        webhook_status=WebhookStatus.SUCCESS, message="Webhook forwarded"
+    )
+
+    response = await dev_client.post(
+        "/webhook", json=valid_payload.model_dump(exclude_none=True)
+    )
+
+    data = response.json()
+
+    assert None not in data.values(), f"Found 'null' in response payload: {data}"

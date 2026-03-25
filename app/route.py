@@ -7,7 +7,9 @@ from app.utils.crypto import verify_mailgun_signature
 router = APIRouter()
 
 
-@router.post("/webhook", response_model=WebhookResponse)
+@router.post(
+    "/webhook", response_model=WebhookResponse, response_model_exclude_none=True
+)
 async def receive_webhook(
     request: Request,
     payload: MailgunPayload,
