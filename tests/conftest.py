@@ -28,12 +28,15 @@ def event_factory() -> Callable[..., EventData]:
     def _create(
         event_type: EventType = EventType.FAILED,
         severity: EventSeverity = EventSeverity.PERMANENT,
-        delivery_status: DeliveryStatus = DeliveryStatus(
-            message="Failed", description=None
-        ),
-        tags: list[str] = ["listmonk"],
+        delivery_status: DeliveryStatus | None = None,
+        tags: list[str] | None = None,
         campaign_uuid: str = "123-abc",
     ) -> EventData:
+        if delivery_status is None:
+            delivery_status = DeliveryStatus(message="Failed", description=None)
+        if tags is None:
+            tags = ["listmonk"]
+
         return EventData(
             event=event_type,
             recipient="test@tamuhack.org",
