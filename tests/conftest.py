@@ -1,4 +1,4 @@
-from typing import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Callable
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -61,7 +61,7 @@ def mock_listmonk_client() -> AsyncMock:
 
 
 @pytest_asyncio.fixture
-async def dev_client() -> AsyncGenerator[AsyncClient, None]:
+async def dev_client() -> AsyncGenerator[AsyncClient]:
     """
     Simulates incoming Mailgun requests by bypassing
     the ASGI web server
@@ -76,7 +76,7 @@ async def dev_client() -> AsyncGenerator[AsyncClient, None]:
 
 
 @pytest_asyncio.fixture
-async def prod_client() -> AsyncGenerator[AsyncClient, None]:
+async def prod_client() -> AsyncGenerator[AsyncClient]:
     """
     Yields a test client where the app was
     built under PRODUCTION environment settings
